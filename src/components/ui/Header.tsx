@@ -25,7 +25,7 @@ const Header = ({title = "", leftIcon, style}: HeaderProps) =>{
         width: leftIcon ? "82%" : "100%",
       }}
     >
-      {title},
+      {title}
     </Typo>
   ) : null}
 </View>
@@ -35,6 +35,11 @@ const Header = ({title = "", leftIcon, style}: HeaderProps) =>{
 export default Header
 
 const styles = StyleSheet.create({
-  container:{},
-  leftIcon:{},
+  container:{
+    width: "100%",
+    alignItems: "center",
+  },
+  leftIcon:{
+    alignSelf: "flex-start",
+  },
 })

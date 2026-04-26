@@ -9,7 +9,6 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
-    
     },
     "android": {
       "adaptiveIcon": {
@@ -36,7 +35,8 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
