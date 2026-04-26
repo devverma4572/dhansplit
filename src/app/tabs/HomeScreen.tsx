@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { signOut } from 'firebase/auth';
 import { router } from 'expo-router';
 import { auth } from "../../../config/firebase";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenWrapper from '../ScreenWrapper';
 
 function HomeScreen() {
     const user = auth.currentUser;
@@ -15,21 +15,21 @@ function HomeScreen() {
         router.push("../WelcomeScreen");
     }
   return (
-    <SafeAreaView style={{backgroundColor: 'themeColors.bg'}} >
+    <ScreenWrapper>
     <View className='flex-row justify-center'>
-        <Text className='font-semibold'>
+        <Text className='font-semibold text-white    '>
             Hello, {user?.displayName}
         </Text>
     </View>
     <View>
         <TouchableOpacity className='flex-row'
             onPress={handleLogout}>
-            <Text>
+            <Text className='text-white'>
                 Log-Out
             </Text>
         </TouchableOpacity>
     </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   )
 }
 

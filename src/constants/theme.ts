@@ -1,65 +1,66 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { scale, verticalScale } from "../utils/styling";
 
-import '@/global.css';
+export const colors = {
+  primary: "#a3e635",
+  primaryLight: "#0ea5e9",
+  primaryDark: "#0369a1",
+  text: "#fff",
+  textLight: "#e5e5e5",
+  textLighter: "#d4d4d4",
+  white: "#fff",
+  black: "#000",
+  rose: "#ef4444",
+  green: "#16a34a",
+  neutral50: "#fafafa",
+  neutral100: "#f5f5f5",
+  neutral200: "#e5e5e5",
+  neutral300: "#d4d4d4",
+  neutral350: "#CCCCCC",
+  neutral400: "#a3a3a3",
+  neutral500: "#737373",
+  neutral600: "#525252",
+  neutral700: "#404040",
+  neutral800: "#262626",
+  neutral900: "#171717",
+};
 
-import { Platform } from 'react-native';
+export const spacingX = {
+  _3: scale(3),
+  _5: scale(5),
+  _7: scale(7),
+  _10: scale(10),
+  _12: scale(12),
+  _15: scale(15),
+  _20: scale(20),
+  _25: scale(25),
+  _30: scale(30),
+  _35: scale(35),
+  _40: scale(40),
+};
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
+export const spacingY = {
+  _5: verticalScale(5),
+  _7: verticalScale(7),
+  _10: verticalScale(10),
+  _12: verticalScale(12),
+  _15: verticalScale(15),
+  _17: verticalScale(17),
+  _20: verticalScale(20),
+  _25: verticalScale(25),
+  _30: verticalScale(30),
+  _35: verticalScale(35),
+  _40: verticalScale(40),
+  _50: verticalScale(50),
+  _60: verticalScale(60),
+};
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
-
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export const radius = {
+  _3: verticalScale(3),
+  _6: verticalScale(6),
+  _10: verticalScale(10),
+  _12: verticalScale(12),
+  _15: verticalScale(15),
+  _17: verticalScale(17),
+  _20: verticalScale(20),
+  _30: verticalScale(30),
+};

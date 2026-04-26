@@ -8,8 +8,7 @@ export default function AppLayout() {
       <Stack.Screen name="WelcomeScreen" options={{headerShown: false}}/>
       <Stack.Screen name="Signup" options={{headerShown: false}}/>
       <Stack.Screen name="LoginScreen" options={{headerShown: false}}/>
-
-      <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+      <Stack.Screen name="tabs" options={{headerShown: false}}/>
     </Stack>
     
   )

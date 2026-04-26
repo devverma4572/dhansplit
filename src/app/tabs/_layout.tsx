@@ -4,7 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 
 function TabLayout() {
   return (
-    <Tabs screenOptions={{headerShown: false}}>
+    <Tabs screenOptions={{
+        headerShown: false,
+        tabBarStyle:{
+            backgroundColor: "#020617",
+            width: "100%",
+            height: 60,
+            paddingBottom: 5,
+            paddingTop: 5,
+        },
+        }}>
         <Tabs.Screen
             name="HomeScreen"
             options={{
@@ -16,24 +25,24 @@ function TabLayout() {
             }}
         />
 
-        <Tabs.Screen
-            name="Expenses"
+        <Tabs.Screen    
+            name="expenses"
             options={{
                 title: "Expenses",
                 headerShown: false,
-                tabBarIcon: ({color, size}) =>(
-                    <Ionicons name="cash" size={size} color={color}/>
-                ),
+                tabBarIcon:({color, size}) =>(
+                    <Ionicons name="cash" color={color} size={size}/>
+                )
             }}
         />
-
-        <Tabs.Screen
-            name="Profile"
+        <Tabs.Screen    
+            name="profile"
             options={{
                 title: "Profile",
-                tabBarIcon: ({color, size}) =>(
-                    <Ionicons name="person" size={size} color={color}/>
-                ),
+                headerShown: false,
+                tabBarIcon:({color, size}) =>(
+                    <Ionicons name="person-circle-outline" color={color} size={size}/>
+                )
             }}
         />
     </Tabs>
