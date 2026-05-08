@@ -1,17 +1,84 @@
-import React from 'react'
-import ScreenWrapper from '../ScreenWrapper'
-import {View, Text} from 'react-native';
-import Header from '../../components/ui/Header';
-import { StyleSheet } from 'react-native';
-import { verticalScale } from "../../utils/styling";
-import { colors, radius, spacingX, spacingY } from '@/constants/theme';
-import useAuth from '../../../hooks/useAuth';
-import { auth } from "../../../config/firebase"
+import { getProfileImage } from '@/components/ui/imageService';
 import Typo from '@/components/ui/Typo';
+import { colors, radius, spacingX, spacingY } from '@/constants/theme';
+import { Image } from 'expo-image';
+import { signOut } from 'firebase/auth';
+import * as Icon from "phosphor-react-native";
+import React from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { auth } from "../../../config/firebase";
+import { accountOptionType } from '../../../types/types';
+import Header from '../../components/ui/Header';
+import { verticalScale } from "../../utils/styling";
+import ScreenWrapper from '../ScreenWrapper';
 
 
 const Profile = () => {
     const user = auth.currentUser;
+    // const accountOptions
+    const accountOptions: accountOptionType[] = [
+      {
+        title: "Edit Profile",
+        icon: 
+          <Icon.User
+            size={26}
+            color={colors.white}
+            weight="fill"
+            />,
+          routeName: "/(modals)/profileModal",
+          bgColor: "#6366f1",
+      },
+      {
+        title: "Settings",
+        icon: <Icon.GearSix 
+        size={26}
+        color={colors.white}
+        weight="fill"
+        />,
+        // routeName: "/(modals)/profileModal",
+        bgColor: "#6366f1",
+      },
+      {
+        title: "Privacy Policy",
+        icon: <Icon.Lock 
+        size={26}
+        color={colors.white}
+        weight="fill"
+        />,
+        // routeName: "/(modals)/profileModal",
+        bgColor: colors.neutral600,
+      },
+      {
+        title: "Logout",
+        icon: <Icon.Power
+        size={26}
+        color={colors.white}
+        weight="fill"
+        />,
+        // routeName: "/(modals)/profileModal",
+        bgColor: "#6366f1", 
+      },
+    ];
+
+    const handleLogout = async ()=>{
+      await signOut(auth);
+    }
+
+    const showLogoutAlert = ()=>{
+      Alert.alert("Confirm", "Are you sure you want to logout?", [
+        {
+          text: "Cancel",
+          onPress: ()=> console.log('cancel logout'),
+          style: 'cancel' 
+        },
+        {
+          text: "Logout",
+          onPress: ()=> handleLogout(),
+          style: 'destructive'  
+        },
+      ])
+    }
+
 
 
 
@@ -29,8 +96,14 @@ const Profile = () => {
           {/* {Avatar} */}
 
 
-          <View>
+          <View style={styles.avatarContainer}>
             {/* {userImage} */}
+            <Image 
+            source={getProfileImage(user?.image)} 
+            style={styles.avatar} 
+            contentFit= "cover"
+            transition={100}
+            />
           </View>
 
           <View style={styles.nameContainer}>
@@ -43,6 +116,35 @@ const Profile = () => {
             </Typo>
     
           </View>
+
+
+{/* ---------------------ACCOUNT OPTIONS------------------------- */}
+        <View style= {styles.accountOptions}>
+          {
+            accountOptions.map((item, index)=>{
+              return(
+                <View style={styles.listItem}>
+                  <TouchableOpacity style={styles.flexRow}>
+                    <View style={[styles.listIcons,
+                     {
+                      backgroundColor: item?.bgColor,
+                     },
+
+                    ]}>
+                      {item.icon && item.icon}
+                    </View>
+                  <Typo size={16} style={{flex: 1}} fontWeight={"500"}>{item.title}</Typo>
+                  <Icon.CaretRight
+                    size={verticalScale(20)}
+                    weight="bold"
+                    color={colors.white}
+                    />
+                    </TouchableOpacity>
+                </View>
+              )             
+            })
+          }
+        </View>
         </View>
 
 
@@ -55,23 +157,26 @@ export default Profile
 const styles = StyleSheet.create({
     container:{
         flex: 0,
-        paddingHorizontal: spacingX._20,
+        paddingHorizontal: spacingX._10,
+        
     },
     userInfo:{
-      marginTop: verticalScale(20),
+      marginTop: verticalScale(10),
       alignItems: "center",
-      gap: spacingY._15,
+      justifyContent: "center",
+      // gap: spacingY._15,
     },
     avatarContainer:{
       position: "relative",
       alignSelf: "center",
+      marginTop: verticalScale(80),
     },
     avatar:{
       alignSelf: "center",
       backgroundColor: colors.neutral300,
-      height: verticalScale(135),
-      width: verticalScale(135),
-      borderRadius: 200,
+      height: verticalScale(100),
+      width: verticalScale(100),
+      borderRadius: 100,
     },
     editIcon:{
       position: "absolute",
@@ -86,8 +191,13 @@ const styles = StyleSheet.create({
       elevation: 4,
       padding: 5,
     },
+    leftSection:{
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacingX._15,
+    },
     nameContainer:{
-      marginTop: spacingY._40,
+      marginTop: spacingY._10,
       gap: verticalScale(4),
       alignItems: "center",
     },
@@ -104,11 +214,14 @@ const styles = StyleSheet.create({
       marginBottom: verticalScale(17),
     },
     accountOptions:{
-      marginTop: spacingY._35,
+      marginTop: spacingY._10,
+      paddingHorizontal: spacingX._10,
     },
     flexRow:{
       flexDirection: "row",
       alignItems: "center",
-      gap: spacingX._15,
+      justifyContent: "space-between",
+      width: "100%",
+      paddingVertical: verticalScale(10),
     },
 });
