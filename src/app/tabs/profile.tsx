@@ -2,85 +2,121 @@ import { getProfileImage } from '@/components/ui/imageService';
 import Typo from '@/components/ui/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import * as Icon from "phosphor-react-native";
 import React from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { auth } from "../../../config/firebase";
 import { accountOptionType } from '../../../types/types';
 import Header from '../../components/ui/Header';
 import { verticalScale } from "../../utils/styling";
 import ScreenWrapper from '../ScreenWrapper';
 
-
 const Profile = () => {
     const user = auth.currentUser;
-    // const accountOptions
-    const accountOptions: accountOptionType[] = [
-      {
-        title: "Edit Profile",
-        icon: 
-          <Icon.User
-            size={26}
-            color={colors.white}
-            weight="fill"
-            />,
-          routeName: "/(modals)/profileModal",
-          bgColor: "#6366f1",
-      },
-      {
-        title: "Settings",
-        icon: <Icon.GearSix 
-        size={26}
-        color={colors.white}
-        weight="fill"
-        />,
-        // routeName: "/(modals)/profileModal",
-        bgColor: "#6366f1",
-      },
-      {
-        title: "Privacy Policy",
-        icon: <Icon.Lock 
-        size={26}
-        color={colors.white}
-        weight="fill"
-        />,
-        // routeName: "/(modals)/profileModal",
-        bgColor: colors.neutral600,
-      },
-      {
-        title: "Logout",
-        icon: <Icon.Power
-        size={26}
-        color={colors.white}
-        weight="fill"
-        />,
-        // routeName: "/(modals)/profileModal",
-        bgColor: "#6366f1", 
-      },
-    ];
+    const profileImage = (user as (typeof user & { image?: unknown }) | null)?.image ?? user?.photoURL;
+    
+    console.log("user: ", user);
 
-    const handleLogout = async ()=>{
-      await signOut(auth);
+// -------------------------------------------------------------------- PROFILE EDIT BUTTONS ---------------------------------------------------------------------
+const accountOptions: accountOptionType[] = [
+  {
+    title: "Edit Profile",
+    icon: 
+    <Icon.User
+    size={26}
+    color={colors.white}
+    weight="fill"
+    />,
+    routeName: "/(modals)/profileModal",
+    bgColor: "#6366f1",
+  },
+  {
+    title: "Settings",
+    icon: <Icon.GearSix 
+    size={26}
+    color={colors.white}
+    weight="fill"
+    />,
+    // routeName: "/(modals)/profileModal",
+    bgColor: "#6366f1",
+  },
+  {
+    title: "Privacy Policy",
+    icon: <Icon.Lock 
+    size={26}
+    color={colors.white}
+    weight="fill"
+    />,
+    // routeName: "/(modals)/profileModal",
+    bgColor: colors.neutral600,
+  },
+  {
+    title: "Logout",
+    icon: <Icon.Power
+    size={26}
+    color={colors.white}
+    weight="fill"
+    />,
+    // routeName: "/(modals)/profileModal",
+    bgColor: "#6366f1", 
+  },
+];
+// -------------------------------------------------------------------- PROFILE EDIT BUTTONS  ---------------------------------------------------------------------
+
+
+
+
+
+
+
+// ---------------------------------------------------------------------- FUNCTIONS -----------------------------------------------------------------------------
+
+const handleLogout = async ()=>{
+  try{
+    await signOut(auth);
+    console.log("User logged out");
+    router.replace("/WelcomeScreen");
+  }
+  catch(error){
+    console.log("Logout Error: ", error);
+  }
+};
+
+const showLogoutAlert = ()=>{
+  if(Platform.OS == "web"){
+    const confirmed = window.confirm(
+      "Are you sure you want to logout?"
+    );
+
+    if(confirmed){
+      void handleLogout();
     }
+    return;
+  };
 
-    const showLogoutAlert = ()=>{
-      Alert.alert("Confirm", "Are you sure you want to logout?", [
-        {
-          text: "Cancel",
-          onPress: ()=> console.log('cancel logout'),
-          style: 'cancel' 
-        },
-        {
-          text: "Logout",
-          onPress: ()=> handleLogout(),
-          style: 'destructive'  
-        },
-      ])
-    }
+  Alert.alert("Confirm", "Are you sure you want to logout?", [
+    {
+      text: "Cancel",
+      style: "cancel",
+    },
+    {
+      text: "Logout",
+      onPress: ()=> void handleLogout(),
+      style: "destructive",
+    },
+  ]);
+}
 
+const handlePress = async(item: accountOptionType)=>{
+  if(item.title == "Logout"){
+    showLogoutAlert();
+  }
+} 
 
-
+// ---------------------------------------------------------------------- FUNCTIONS -----------------------------------------------------------------------------
 
   return (
     <ScreenWrapper>
@@ -89,7 +125,7 @@ const Profile = () => {
         </View>
 
 
-
+{/* --------------------------------------------------------------- USER INFO --------------------------------------------------------------------------- */}
         {/* {User Info} */}
         <View style={styles.userInfo}> 
 
@@ -99,7 +135,7 @@ const Profile = () => {
           <View style={styles.avatarContainer}>
             {/* {userImage} */}
             <Image 
-            source={getProfileImage(user?.image)} 
+            source={getProfileImage(profileImage)} 
             style={styles.avatar} 
             contentFit= "cover"
             transition={100}
@@ -116,39 +152,62 @@ const Profile = () => {
             </Typo>
     
           </View>
+          </View>
+
+{/* --------------------------------------------------------------- USER INFO --------------------------------------------------------------------------- */}
 
 
-{/* ---------------------ACCOUNT OPTIONS------------------------- */}
+
+
+
+
+
+{/* -------------------------------------------------------------ACCOUNT OPTIONS----------------------------------------------------------------- */}
+        <View style={{flex: 1}}>
         <View style= {styles.accountOptions}>
           {
             accountOptions.map((item, index)=>{
               return(
-                <View style={styles.listItem}>
-                  <TouchableOpacity style={styles.flexRow}>
+                <Animated.View 
+                  key={item.title}
+                entering={FadeInDown.delay(index * 100)
+                  .springify()
+                  .damping(14)}
+                  style={styles.listItem}>
+                  
+                <TouchableOpacity 
+                  style={styles.flexRow}
+                  onPress={()=> {
+                    console.log("Pressed: ", item.title);
+                      handlePress(item)
+                  }}
+                  >
                     <View style={[styles.listIcons,
                      {
                       backgroundColor: item?.bgColor,
                      },
-
+                     
                     ]}>
                       {item.icon && item.icon}
                     </View>
+
                   <Typo size={16} style={{flex: 1}} fontWeight={"500"}>{item.title}</Typo>
+
                   <Icon.CaretRight
                     size={verticalScale(20)}
                     weight="bold"
                     color={colors.white}
                     />
                     </TouchableOpacity>
-                </View>
+                </Animated.View>
               )             
             })
           }
         </View>
         </View>
 
-
     </ScreenWrapper>
+    // {/* -------------------------------------------------------------ACCOUNT OPTIONS----------------------------------------------------------------- */}
   );
 };
 
@@ -212,10 +271,12 @@ const styles = StyleSheet.create({
     },
     listItem: {
       marginBottom: verticalScale(17),
+      paddingVertical: 5,
     },
     accountOptions:{
       marginTop: spacingY._10,
       paddingHorizontal: spacingX._10,
+      zIndex:999,
     },
     flexRow:{
       flexDirection: "row",
