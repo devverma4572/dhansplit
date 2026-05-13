@@ -2,7 +2,7 @@ import { getProfileImage } from '@/components/ui/imageService';
 import Typo from '@/components/ui/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import * as Icon from "phosphor-react-native";
 import React from 'react';
@@ -16,8 +16,9 @@ import ScreenWrapper from '../ScreenWrapper';
 
 const Profile = () => {
     const user = auth.currentUser;
+    const router = useRouter();
     const profileImage = (user as (typeof user & { image?: unknown }) | null)?.image ?? user?.photoURL;
-    
+     
     console.log("user: ", user);
 
 // -------------------------------------------------------------------- PROFILE EDIT BUTTONS ---------------------------------------------------------------------
@@ -114,7 +115,14 @@ const handlePress = async(item: accountOptionType)=>{
   if(item.title == "Logout"){
     showLogoutAlert();
   }
+  if(item.title == "Edit Profile"){
+    router.push("/(modals)/Profile-Modal");
+  }
+
 } 
+
+
+
 
 // ---------------------------------------------------------------------- FUNCTIONS -----------------------------------------------------------------------------
 
@@ -222,7 +230,7 @@ const styles = StyleSheet.create({
     userInfo:{
       marginTop: verticalScale(10),
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "center", 
       // gap: spacingY._15,
     },
     avatarContainer:{
