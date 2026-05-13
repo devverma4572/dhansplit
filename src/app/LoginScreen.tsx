@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import {Image, View, Text, TouchableOpacity, TextInput} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {ArrowLeftIcon} from "react-native-heroicons/solid";
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from "../../config/firebase"
+import React, { useState } from 'react';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ArrowLeftIcon } from "react-native-heroicons/solid";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from "../../config/firebase";
 
 // import { LinearGradient } from 'react-native-svg';   
 
@@ -59,7 +59,7 @@ export default function LoginScreen() {
             <View className='form space-y-2'>
                 <Text className='text-gray-700 ml-4 font-semibold'> Email Address</Text>
 
-                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder: color-white'
+                 <TextInput className='p-4 bg-gray-100 text-black rounded-2xl mb-3 placeholder:font-semibold placeholder: color-black'
                     placeholder='Enter Email'
                     value={email}
                     onChangeText={value=> setEmail(value)}  

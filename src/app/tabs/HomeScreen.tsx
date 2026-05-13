@@ -1,7 +1,8 @@
-import React from 'react'
-import { Text, TouchableOpacity, View } from "react-native";
-import { signOut } from 'firebase/auth';
+import { spacingX, spacingY } from '@/constants/theme';
 import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { auth } from "../../../config/firebase";
 import ScreenWrapper from '../ScreenWrapper';
 
@@ -16,10 +17,8 @@ function HomeScreen() {
     }
   return (
     <ScreenWrapper>
-    <View className='flex-row justify-center'>
-        <Text className='font-semibold text-white    '>
-            Hello, {user?.displayName}
-        </Text>
+    <View style={StyleSheet.container}>
+        
     </View>
     <View>
         <TouchableOpacity className='flex-row'
@@ -33,4 +32,12 @@ function HomeScreen() {
   )
 }
 
-export default HomeScreen
+export default HomeScreen;
+
+const styles = StyleSheet.create({
+    container:{
+        flex: 1,
+        gap: spacingY._30,
+        paddingHorizontal: spacingX._20,
+    }
+})
