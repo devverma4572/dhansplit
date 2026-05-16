@@ -31,7 +31,7 @@ const accountOptions: accountOptionType[] = [
     color={colors.white}
     weight="fill"
     />,
-    routeName: "/(modals)/profileModal",
+    routeName: "/(modals)/Profile-Modal",
     bgColor: "#6366f1",
   },
   {

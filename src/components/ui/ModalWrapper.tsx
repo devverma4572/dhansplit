@@ -17,7 +17,7 @@ const ModalWrapper = ({
     )
 }
 
-export default ModalWrapper
+export default ModalWrapper 
 
 const styles = StyleSheet.create({
     container:{

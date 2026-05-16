@@ -7,6 +7,7 @@ import { ArrowLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from "../../config/firebase";
 
+
 // import { LinearGradient } from 'react-native-svg';   
 
 export default function LoginScreen() {

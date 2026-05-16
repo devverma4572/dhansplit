@@ -3,9 +3,9 @@ import "../global.css";
 
 export default function AppLayout() {
   return(
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{headerShown: false}} />
-      <Stack.Screen name="(modals)/profileModal" 
+      <Stack.Screen name="(modals)/Profile-Modal" 
        options={{
         headerShown: false,
         presentation: "modal",

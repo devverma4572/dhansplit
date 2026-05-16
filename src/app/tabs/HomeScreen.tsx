@@ -17,7 +17,7 @@ function HomeScreen() {
     }
   return (
     <ScreenWrapper>
-    <View style={StyleSheet.container}>
+    <View style={styles.container}>
         
     </View>
     <View>
