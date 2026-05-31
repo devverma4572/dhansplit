@@ -4,23 +4,45 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
+import { doc, onSnapshot } from "firebase/firestore";
 import * as Icon from "phosphor-react-native";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { auth } from "../../../config/firebase";
+import { auth, firestore } from "../../../config/firebase";
+import useAuth from '../../../hooks/useAuth';
 import { accountOptionType } from '../../../types/types';
 import Header from '../../components/ui/Header';
 import { verticalScale } from "../../utils/styling";
 import ScreenWrapper from '../ScreenWrapper';
-
+ 
 const Profile = () => {
-    const user = auth.currentUser;
+    const {user} = useAuth();
+    const firebaseuser = auth.currentUser;  
+    
+    const [profileData, setProfileData] = useState<any>(null);
+
     const router = useRouter();
     const profileImage = (user as (typeof user & { image?: unknown }) | null)?.image ?? user?.photoURL;
      
     console.log("user: ", user);
 
+   useEffect(() => {
+    console.log("user = ", user);
+    console.log("uid = ", user?.uid);
+  if (!user?.uid) return;
+
+  const unsub = onSnapshot(
+    doc(firestore, "users", user.uid),
+    (snapshot) => {
+      if (snapshot.exists()) {
+        setProfileData(snapshot.data());
+      }
+    }
+  );
+
+  return unsub;
+}, [user]);
 // -------------------------------------------------------------------- PROFILE EDIT BUTTONS ---------------------------------------------------------------------
 const accountOptions: accountOptionType[] = [
   {
@@ -124,6 +146,7 @@ const handlePress = async(item: accountOptionType)=>{
 
 
 
+
 // ---------------------------------------------------------------------- FUNCTIONS -----------------------------------------------------------------------------
 
   return (
@@ -153,7 +176,7 @@ const handlePress = async(item: accountOptionType)=>{
           <View style={styles.nameContainer}>
 
             <Typo size={24} fontWeight={'600'} color={colors.neutral100}>
-              {user?.displayName}
+              {profileData?.name || user?.displayName}
             </Typo>
             <Typo size={16} fontWeight={'400'} color={colors.neutral400}>
               {user?.email}

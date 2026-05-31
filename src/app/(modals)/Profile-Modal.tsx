@@ -4,23 +4,100 @@ import ModalWrapper from '@/components/ui/ModalWrapper';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
 import { verticalScale } from "@/utils/styling";
 import { Image } from "expo-image";
+import { useRouter } from 'expo-router';
+import { updateProfile } from 'firebase/auth';
 import * as Icons from 'phosphor-react-native';
 import React, { useState } from "react";
-import { Button, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { auth } from '../../../config/firebase';
+import { updateUser } from '../../../services/userService';
 import { UserDataType } from '../../../types/types';
 import Typo from '../../components/ui/Typo';
 
 const ProfileModal = () => {
-  const user = auth.currentUser;
-  const profileImage = user?.photoURL;
+  const firebaseuser = auth.currentUser;
+  const profileImage = firebaseuser?.photoURL;
   console.log(profileImage);
 
+
+// -------------------------- setUserData ------------------------------------------
+
+  // Here (UserDataType) is defined inside the type.ts which export name and image 
+    // To make more edit field add more items in UserDataType.
   const [userData, setUserData] = useState<UserDataType>({
-    name:"",
+    name: firebaseuser?.displayName || "",
     image: null,
   })
+
+//---------------------------- Loading State -----------------------------------------
+
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+// ---------------------------------- onSubmit function ----------------------------------
+
+  const onSubmit = async  ()=>{
+    const currentUser = auth.currentUser;
+    const uid = currentUser?.uid;
+
+    if(!currentUser || !uid){
+      console.log("User not loaded yet");
+      return;
+    }
+
+    let {name, image} = userData;
+    const trimmedName = name.trim();
+    if(!trimmedName){
+      if(Platform.OS == "web"){
+        window.alert("Please fill all the details");
+      } else {
+        Alert.alert("Missing details", "Please fill all the details");
+      }
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await updateUser(uid, {
+        name: trimmedName,
+        image,
+      });
+
+      if(!response.success){
+        if(Platform.OS == "web"){
+          window.alert(response.msg || "Not updated");
+        } else {
+          Alert.alert("Not updated", response.msg || "Please try again");
+        }
+        return;
+      }
+
+        await updateProfile(currentUser, {
+          displayName: trimmedName,
+        });
+
+        if(Platform.OS == "web"){
+          window.alert("Updated");
+        } else {
+          Alert.alert("Updated", "Profile updated successfully");
+        }
+        console.log("Updated");
+        router.back();
+    } catch (error: any) {
+        if(Platform.OS == "web"){
+          window.alert(error?.message || "Not updated");
+        } else {
+          Alert.alert("Not updated", error?.message || "Please try again");
+        }
+    } finally {
+      setLoading(false);
+    }
     
+  }
+    
+
+  // ---------------------------------- FORM -----------------------------------------------------
 
   return (
     <ModalWrapper>
@@ -31,7 +108,6 @@ const ProfileModal = () => {
             style = {{marginBottom: spacingY._10}}
             />
       
-      {/* ------------------------------FORM-------------------------------- */}
 
 
 
@@ -71,9 +147,17 @@ const ProfileModal = () => {
         
         {/* ----------------------------------------------- Footer ---------------------------------------------------------- */}
         <View style={styles.footer}>
-          <Button onPress={onSubmit} style={{flex: 1}} >
-
-          </Button>
+          <TouchableOpacity onPress={onSubmit} >
+            {
+              loading ? (
+                <ActivityIndicator color="white"/>
+              ):(
+                <Typo color={colors.white} fontWeight={700}>
+                  Update
+                </Typo>
+              )
+            }
+          </TouchableOpacity>
         </View>
 
 
@@ -185,14 +269,11 @@ const styles = StyleSheet.create({
       }
     },
     footer:{
+      backgroundColor: "#6366f1",
+      height: verticalScale(55),
+      borderRadius: radius._15,
       alignItems: "center",
-      flexDirection: "row",
       justifyContent: "center",
-      paddingHorizontal: spacingX._20,
-      gap: scale(12),
-      paddingTop: spacingY._15,
-      borderTopColor: colors.neutral700,
-      marginBottom: spacingY._5,
-      borderTopWidth: 1,
+      marginTop: spacingY._10,
     }
   });

@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import {Image, View, Text, TouchableOpacity, TextInput} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {ArrowLeftIcon} from "react-native-heroicons/solid";
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, signOut, updateProfile, UserCredential } from 'firebase/auth';
-import { auth } from "../../config/firebase"
+import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import React, { useState } from 'react';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ArrowLeftIcon } from "react-native-heroicons/solid";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from "../../config/firebase";
 // import { useState } from "react"; 
 // import { LinearGradient } from 'react-native-svg';   
 
@@ -65,13 +65,13 @@ export default function LoginScreen() {
             <View className='form space-y-2'>
                 <Text className='text-gray-700 ml-4 font-semibold'> Full Name</Text>
 
-                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder: color-white'
+                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder'
                     placeholder='Enter your Name'
                     onChangeText={value=> setName(value)}
                     />
                 <Text className='text-gray-700 ml-4 font-semibold'> Email Address</Text>
 
-                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder: color-white'
+                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder: '
                     onChangeText={value=> setEmail(value)}
                     placeholder='Enter Email'/>
 
