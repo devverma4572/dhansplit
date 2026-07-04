@@ -19,6 +19,8 @@ export default function LoginScreen() {
     const [password, setPassword]  = useState('');
 
     const handleSubmit = async ()=>{
+        console.log("Login Button pressed");
+        console.log("email: ", email, "password: ", password);
          if(email && password){
              try{
                  await signInWithEmailAndPassword(auth, email, password);
@@ -69,7 +71,7 @@ export default function LoginScreen() {
                 <Text className='text-gray-700 ml-4'> Password </Text>
                  
                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3'
-                    secureTextEntry
+                    
                     placeholder='Enter Password'
                     value={password}
                         onChangeText={value=> setPassword(value)}
@@ -79,17 +81,11 @@ export default function LoginScreen() {
                     <Text className='text-gray-700'> Forgot Password</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleSubmit}>
-                    <Text
-                        className="px-6 py-3 text-white font-semibold rounded-xl 
-                        bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
-                        shadow-lg shadow-purple-500/30
-                        hover:scale-105 hover:shadow-xl hover:shadow-purple-500/40
-                        active:scale-95
-                        transition-all duration-300 ease-in-out">
-                            
-                        Login
-                    </Text>
+
+                <TouchableOpacity    style={{backgroundColor: "orange", padding: 20, marginTop: 20,}}
+                onPress={handleSubmit}>
+            
+                <Text>Login</Text>
                 </TouchableOpacity>
 
 {/* ------------------------------------OR / GOOGLE ---------------------------------------------------------------------- */}

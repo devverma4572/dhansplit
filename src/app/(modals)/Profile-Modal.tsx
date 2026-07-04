@@ -4,12 +4,14 @@ import ModalWrapper from '@/components/ui/ModalWrapper';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
 import { verticalScale } from "@/utils/styling";
 import { Image } from "expo-image";
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { updateProfile } from 'firebase/auth';
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import * as Icons from 'phosphor-react-native';
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import { auth } from '../../../config/firebase';
+import { auth, storage } from '../../../config/firebase';
 import { updateUser } from '../../../services/userService';
 import { UserDataType } from '../../../types/types';
 import Typo from '../../components/ui/Typo';
@@ -18,6 +20,22 @@ const ProfileModal = () => {
   const firebaseuser = auth.currentUser;
   const profileImage = firebaseuser?.photoURL;
   console.log(profileImage);
+
+  const pickImage = async()=>{
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1,1],
+      quality: 1,
+    });
+
+    if(!result.canceled){
+      setUserData({
+        ...userData,
+        image: result.assets[0].uri,
+      });
+    }
+  }
 
 
 // -------------------------- setUserData ------------------------------------------
@@ -33,6 +51,34 @@ const ProfileModal = () => {
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+//------------------------------ProfileImageUpdate function--------------------------------
+
+const onPickImage = async()=>{
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 0.5,
+  })
+
+}
+
+// ------------------------------------- Image Upload function------------------
+const uploadProfileImage = async(imageUri: string )=>{
+  const response = await fetch(imageUri);
+  const blob = await response.blob();
+
+  const filename = `profileImages/${Date.now()}.jpg`;
+  const storageRef = ref(storage, filename);
+  await uploadBytes(storageRef, blob);
+  const downloadURL = await getDownloadURL(storageRef);
+  return downloadURL;
+}
+
+
+
+
 
 // ---------------------------------- onSubmit function ----------------------------------
 
@@ -61,7 +107,7 @@ const ProfileModal = () => {
 
       const response = await updateUser(uid, {
         name: trimmedName,
-        image,
+        image, 
       });
 
       if(!response.success){
@@ -72,10 +118,19 @@ const ProfileModal = () => {
         }
         return;
       }
+      
+      let photoURL = currentUser.photoURL;
+
+      if(image){
+        photoURL = await uploadProfileImage(image);
+      }
 
         await updateProfile(currentUser, {
           displayName: trimmedName,
+          photoURL,
         });
+
+        await currentUser.reload();
 
         if(Platform.OS == "web"){
           window.alert("Updated");
@@ -117,15 +172,20 @@ const ProfileModal = () => {
         <View style={styles.avatarContainer}>
           <Image style={styles.avatar}
           source={
-            profileImage
-              ? {uri: profileImage}
-              : require('../../../assets/images/defaultAvatar.png')
+            userData.image
+              ? {uri: userData.image} 
+              : profileImage
+                ? { uri: profileImage}
+                : require("../../../assets/images/defaultAvatar.png")
           }
           contentFit="cover"
           transition={100}    
           />
 
-          <TouchableOpacity style={styles.editIcon}>
+          <TouchableOpacity 
+          style={styles.editIcon}
+          onPress={pickImage}
+          >
             <Icons.Pencil
               size={verticalScale(20)}
               color={colors.neutral800} 
@@ -159,10 +219,6 @@ const ProfileModal = () => {
             }
           </TouchableOpacity>
         </View>
-
-
-
-
         </ScrollView>
 
 

@@ -1,11 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import {
+    doc,
+    serverTimestamp,
+    setDoc,
+} from "firebase/firestore";
 import React, { useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ArrowLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from "../../config/firebase";
+import { auth, firestore } from "../../config/firebase";
 // import { useState } from "react"; 
 
 // import { LinearGradient } from 'react-native-svg';   
@@ -18,21 +23,55 @@ export default function LoginScreen() {
     const[name, setName] = useState('');
     const [email, setEmail] = useState('');
     const[password, setPassword] = useState('');
+    const[userName, setuserName] = useState('');
 
-    const handleSubmit = async ()=>{
-        if(name && email && password){
-            try{
-                const UserCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await updateProfile(UserCredential.user,{
-                    displayName: name,
-                })
-                router.push("/tabs/HomeScreen");
-            }catch(err){ 
-                const message = err instanceof Error ? err.message : String(err);
-                console.log('got error: ', message);
-            }
-        }
-    }
+
+
+
+
+
+
+    const handleSubmit = async () => {
+  if (!name || !email || !password || !userName) {
+    console.log("Please fill all fields");
+    return;
+  }
+
+  try {
+    // 1. Create Firebase Authentication user
+    const userCredential =
+      await createUserWithEmailAndPassword(auth, email, password);
+
+    const user = userCredential.user;
+
+    // 2. Save name in Firebase Authentication profile
+    await updateProfile(user, {
+      displayName: name,
+    });
+
+    // 3. Create user document in Firestore
+    await setDoc(doc(firestore, "users", user.uid), {
+      uid: user.uid,
+      name: name.trim(),
+      userName: userName.trim().toLowerCase(),
+      email: user.email,
+      profileImage: "",
+      createdAt: serverTimestamp(),
+    });
+
+    // 4. Go to Home Screen
+    router.replace("/tabs/HomeScreen");
+
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : String(err);
+
+    console.log("got error:", message);
+  }
+};
+
+
+
     const handleLogout = async() =>{
         await signOut(auth);
     }
@@ -83,6 +122,13 @@ export default function LoginScreen() {
                     value={password}
                     onChangeText={value => setPassword(value)}
                     placeholder='Enter Password'/>
+
+                <Text className='text-gray-700 ml-4 font-semibold'> userName</Text>
+
+                 <TextInput className='p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3 placeholder:font-semibold placeholder'
+                    placeholder='Enter the userName'
+                    onChangeText={value=> setuserName(value)}
+                    />
             
                 {/* <TouchableOpacity className='flex items-end mb-5'>
                     <Text className='text-gray-700'> Forgot Password</Text>
