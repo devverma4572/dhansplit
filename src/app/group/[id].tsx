@@ -6,6 +6,7 @@ import React, {
 
 
 
+
 import {
   ActivityIndicator,
   Alert,
@@ -37,7 +38,8 @@ import {
   writeBatch
 } from "firebase/firestore";
 
-import { firestore } from "../../../config/firebase";
+import { auth, firestore } from "../../../config/firebase";
+import { ExpenseSplit } from "../../../types/group";
 
 interface Group {
   id: string;
@@ -56,6 +58,7 @@ interface Expense {
   paidBy: string;
   paidByName: string;
   splitType: "equal" | "unequal";
+  splits: ExpenseSplit[];
   createdAt?: any;
 }
 
@@ -66,6 +69,13 @@ export default function GroupDetails() {
 
   const [group, setGroup] =
     useState<Group | null>(null);
+
+  // ----------------------------------------- Creating variables for owe and owed amount ---------------------------------------------------
+
+  // const [expense, setExpenses] = useState<Expense[]>([]);
+  const [TotalSpent, setTotalSpent] = useState(0);
+  const [YouOwe, setYouOwe] = useState(0);
+  const [YouAreOwed, setYouAreOwed] = useState(0);
 
   const [groupMenuVisible, setGroupMenuVisible] = useState(false);
 
@@ -159,10 +169,6 @@ export default function GroupDetails() {
       ]
     );
   };
-
-  // --------------------------------------------------------------------------------------------
-
-
 
 
   // ------------------------------------ Function to delete a expense ----------------------------------
@@ -273,6 +279,67 @@ export default function GroupDetails() {
     );
   };
 
+  const calculateGroupSummary = (
+  groupExpenses: Expense[]
+) => {
+  const currentUserId =
+    auth.currentUser?.uid;
+
+  if (!currentUserId) {
+    return;
+  }
+
+  let total = 0;
+  let owe = 0;
+  let owed = 0;
+
+  groupExpenses.forEach((expense) => {
+    const expenseAmount =
+      Number(expense.amount);
+
+    // Add complete expense amount
+    total += expenseAmount;
+
+    // Find current user's share
+    const mySplit =
+      expense.splits?.find(
+        (split) =>
+          split.userId === currentUserId
+      );
+
+    // Current user was not included
+    if (!mySplit) {
+      return;
+    }
+
+    const myShare =
+      Number(mySplit.amount);
+
+    // I paid the expense
+    if (
+      expense.paidBy === currentUserId
+    ) {
+      owed +=
+        expenseAmount - myShare;
+    }
+
+    // Another member paid
+    else {
+      owe += myShare;
+    }
+  });
+
+  console.log("GROUP SUMMARY:", {
+    total,
+    owe,
+    owed,
+  });
+
+  setTotalSpent(total);
+  setYouOwe(owe);
+  setYouAreOwed(owed);
+};
+
 
 
 
@@ -335,6 +402,7 @@ export default function GroupDetails() {
       );
 
       setExpenses(expenseList);
+      calculateGroupSummary(expenseList);
 
     } catch (error) {
       console.log(
@@ -428,7 +496,10 @@ export default function GroupDetails() {
 
       {/* Total Expense */}
 
+
       <View style={styles.summaryCard}>
+        {/* Left Side */}
+        <View style={styles.summaryItem}>
         <Text style={styles.summaryLabel}>
           Total Group Expense
         </Text>
@@ -436,7 +507,23 @@ export default function GroupDetails() {
         <Text style={styles.summaryAmount}>
           ₹{group.totalExpense || 0}
         </Text>
-      </View>
+        </View>
+
+      {/* Vertical Divider */}
+      <View style={styles.summaryDivider}/>
+
+      {/* Right Side */}
+      <View style={styles.summaryItem}>
+        <Text style={styles.summaryLabel}>
+          You Owe
+        </Text>
+
+        <Text style={styles.oweAmount}>
+          ₹{YouOwe.toFixed(2) || 0}
+        </Text>
+        </View>
+      </View> 
+
 
       {/* Expense Header */}
 
@@ -744,6 +831,18 @@ const styles = StyleSheet.create({
     padding: 22,
     borderRadius: 18,
     marginBottom: 28,
+
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  summaryItem:{
+    flex: 1
+  },
+  summaryDivider:{
+    width: 1,
+    height: 55,
+    backgroundColor: "#30363D",
+    marginHorizontal: 20,
   },
 
   summaryLabel: {
@@ -753,6 +852,13 @@ const styles = StyleSheet.create({
 
   summaryAmount: {
     color: "#55efc4",
+    fontSize: 30,
+    fontWeight: "bold",
+    marginTop: 8,
+  },
+
+  oweAmount:{
+    color: "red",
     fontSize: 30,
     fontWeight: "bold",
     marginTop: 8,
