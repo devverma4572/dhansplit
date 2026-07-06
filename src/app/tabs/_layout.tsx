@@ -26,12 +26,12 @@ function TabLayout() {
         />
 
         <Tabs.Screen    
-            name="expenses"
+            name="Groups"
             options={{
-                title: "Expenses",
+                title: "Groups",
                 headerShown: false,
                 tabBarIcon:({color, size}) =>(
-                    <Ionicons name="cash" color={color} size={size}/>
+                    <Ionicons name="people" color={color} size={size}/>
                 )
             }}
         />

@@ -26,11 +26,18 @@ import {
   UserData,
 } from "../../../types/home";
 
+import { router } from "expo-router";
 
 
 
 
+// ------------------------------------------- Interface created -----------------------------------
+interface ExpenseSplit {
+  userId: string;
+  amount: number;
+}
 
+// --------------------------------------------------------------------------------------------------
 
 
 
@@ -140,33 +147,47 @@ const calculateSummary = (
   let owed = 0;
 
   expenses.forEach((expense) => {
-    const expenseAmount = Number(expense.amount);
+    const expenseAmount =
+      Number(expense.amount);
 
-    // Total expenses
     total += expenseAmount;
 
-    // Find current user's share
-    const mySplit = expense.splits?.find(
-      (split) => split.userId === currentUserId
-    );
+    const mySplit =
+      expense.splits?.find(
+        (split) =>
+          split.userId === currentUserId
+      );
 
-    // Skip if current user is not part of this expense
+    // Current user was not included
     if (!mySplit) {
       return;
     }
 
-    // Current user owes money
- if (expense.paidBy === currentUserId) {
-  const mySplit = expense.splits?.find(
-    (split) => split.userId === currentUserId
-  );
+    const myShare =
+      Number(mySplit.amount);
 
-  const myShare = mySplit
-    ? Number(mySplit.amount)
-    : 0;
+    // CASE 1:
+    // I paid for the expense
+    if (
+      expense.paidBy === currentUserId
+    ) {
+      // Other members owe me
+      owed +=
+        expenseAmount - myShare;
+    }
 
-  owed += Number(expense.amount) - myShare;
-}
+    // CASE 2:
+    // Someone else paid
+    else {
+      // I owe my share to the payer
+      owe += myShare;
+    }
+  });
+
+  console.log("SUMMARY:", {
+    total,
+    owe,
+    owed,
   });
 
   setTotalExpenses(total);
@@ -296,7 +317,16 @@ if (loading) {
           <Text style={styles.sectionTitle}>Your Groups</Text>
 
           {groups.map((group) => (
-            <TouchableOpacity key={group.id} style={styles.groupCard}>
+            <TouchableOpacity key={group.id} style={styles.groupCard}
+            onPress={()=>
+              router.push({
+                pathname: "/group/[id]",
+                params:{
+                  id: group.id,
+                },
+              })
+            }
+            >
               <View style={styles.groupIcon}>
                 <Ionicons
                   name="people"

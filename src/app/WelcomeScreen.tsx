@@ -1,7 +1,7 @@
-import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert, View, Text, Image, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
+import React from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 
 export default function WelcomeScreen(){
@@ -24,7 +24,7 @@ export default function WelcomeScreen(){
 
             <View className="space-y-4">
                 <TouchableOpacity
-                    onPress={()=> router.push("/Signup")
+                    onPress={()=> router.push("/newsignup")
                         
                     }
                     className="py-3 bg-blue-100 mx-7 rounded-xl">

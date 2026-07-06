@@ -104,7 +104,7 @@ export default function LoginScreen() {
 {/* --------------------------------------Already have account --------------------------------------------------------- */}
                 <View className='flex-row justify-center'>
                     <Text className='align-center font-semibold mt-4'> Don't have an account    ? </Text>
-                    <TouchableOpacity onPress={()=> router.push("/Signup")}>
+                    <TouchableOpacity onPress={()=> router.push("/newsignup")}>
                         <Text className='font-semibold text-yellow-500 mt-4'> Sign-up</Text>
                     </TouchableOpacity>
                 </View>
