@@ -31,46 +31,6 @@ import {
 import { auth, firestore } from "../../../config/firebase";
 
 // ------------------------------------ GROUP SNAPSHOT -------------------------------------------
-const groupSnapshot = await getDoc(
-  doc(firestore, "groups", groupId)
-);
-
-const groupData = groupSnapshot.data();
-
-const memberIds: string[] =
-  groupData?.members || [];
-
-const sharePerPerson =
-  numericAmount / memberIds.length;
-
-const expenseSplits = memberIds.map(
-  (memberId) => ({
-    userId: memberId,
-    amount: sharePerPerson,
-  })
-);
-
-const expenseRef = await addDoc(
-  collection(firestore, "expenses"),
-  {
-    groupId,
-    title: title.trim(),
-    description: description.trim(),
-    amount: numericAmount,
-
-    paidBy: currentUser.uid,
-    paidByName: payerName,
-
-    splitType,
-    splits: expenseSplits,
-
-    createdAt: serverTimestamp(),
-  }
-);
-
-
-
-
 
 export default function AddExpense() {
 
@@ -140,6 +100,8 @@ export default function AddExpense() {
     }
 
     try {
+      
+      
 
       setSaving(true);
 
@@ -168,6 +130,25 @@ if (userSnapshot.exists()) {
 
 console.log("Payer name:", payerName);
 
+const groupSnapshot = await getDoc(
+  doc(firestore, "groups", groupId)
+);
+
+const groupData = groupSnapshot.data();
+
+const memberIds: string[] =
+  groupData?.members || [];
+
+const sharePerPerson =
+  numericAmount / memberIds.length;
+
+const expenseSplits = memberIds.map(
+  (memberId) => ({
+    userId: memberId,
+    amount: sharePerPerson,
+  })
+);
+
       const expenseRef = await addDoc(
         collection(firestore, "expenses"),
         {
@@ -183,7 +164,7 @@ console.log("Payer name:", payerName);
           paidBy: currentUser.uid,
           paidByName: payerName,
 
-          splitType: splitType,
+          splitType: splitType,   
 
           splits: expenseSplits,
 
