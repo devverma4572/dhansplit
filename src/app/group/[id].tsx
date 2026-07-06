@@ -280,65 +280,65 @@ export default function GroupDetails() {
   };
 
   const calculateGroupSummary = (
-  groupExpenses: Expense[]
-) => {
-  const currentUserId =
-    auth.currentUser?.uid;
+    groupExpenses: Expense[]
+  ) => {
+    const currentUserId =
+      auth.currentUser?.uid;
 
-  if (!currentUserId) {
-    return;
-  }
-
-  let total = 0;
-  let owe = 0;
-  let owed = 0;
-
-  groupExpenses.forEach((expense) => {
-    const expenseAmount =
-      Number(expense.amount);
-
-    // Add complete expense amount
-    total += expenseAmount;
-
-    // Find current user's share
-    const mySplit =
-      expense.splits?.find(
-        (split) =>
-          split.userId === currentUserId
-      );
-
-    // Current user was not included
-    if (!mySplit) {
+    if (!currentUserId) {
       return;
     }
 
-    const myShare =
-      Number(mySplit.amount);
+    let total = 0;
+    let owe = 0;
+    let owed = 0;
 
-    // I paid the expense
-    if (
-      expense.paidBy === currentUserId
-    ) {
-      owed +=
-        expenseAmount - myShare;
-    }
+    groupExpenses.forEach((expense) => {
+      const expenseAmount =
+        Number(expense.amount);
 
-    // Another member paid
-    else {
-      owe += myShare;
-    }
-  });
+      // Add complete expense amount
+      total += expenseAmount;
 
-  console.log("GROUP SUMMARY:", {
-    total,
-    owe,
-    owed,
-  });
+      // Find current user's share
+      const mySplit =
+        expense.splits?.find(
+          (split) =>
+            split.userId === currentUserId
+        );
 
-  setTotalSpent(total);
-  setYouOwe(owe);
-  setYouAreOwed(owed);
-};
+      // Current user was not included
+      if (!mySplit) {
+        return;
+      }
+
+      const myShare =
+        Number(mySplit.amount);
+
+      // I paid the expense
+      if (
+        expense.paidBy === currentUserId
+      ) {
+        owed +=
+          expenseAmount - myShare;
+      }
+
+      // Another member paid
+      else {
+        owe += myShare;
+      }
+    });
+
+    console.log("GROUP SUMMARY:", {
+      total,
+      owe,
+      owed,
+    });
+
+    setTotalSpent(total);
+    setYouOwe(owe);
+    setYouAreOwed(owed);
+  };
 
 
 
@@ -500,29 +500,45 @@ export default function GroupDetails() {
       <View style={styles.summaryCard}>
         {/* Left Side */}
         <View style={styles.summaryItem}>
-        <Text style={styles.summaryLabel}>
-          Total Group Expense
-        </Text>
+          <Text style={styles.summaryLabel}>
+            Total Group Expense
+          </Text>
 
-        <Text style={styles.summaryAmount}>
-          ₹{group.totalExpense || 0}
-        </Text>
+          <Text style={styles.summaryAmount}>
+            ₹{group.totalExpense || 0}
+          </Text>
         </View>
 
-      {/* Vertical Divider */}
-      <View style={styles.summaryDivider}/>
+        {/* Vertical Divider */}
+        <View style={styles.summaryDivider} />
 
-      {/* Right Side */}
-      <View style={styles.summaryItem}>
-        <Text style={styles.summaryLabel}>
-          You Owe
-        </Text>
+        {/* Right Side */}
+        <View style={styles.balanceSection}>
 
-        <Text style={styles.oweAmount}>
-          ₹{YouOwe.toFixed(2) || 0}
-        </Text>
+          {/* You Are Owed */}
+          <View style={styles.balanceRow}>
+            <Text style={styles.balanceLabel2}>
+              You Are Owed
+            </Text>
+
+            <Text style={styles.owedAmount}>
+              ₹{YouAreOwed.toFixed(2)}
+            </Text>
+          </View>
+
+          {/* You Owe */}
+          <View style={styles.balanceRow}>
+            <Text style={styles.balanceLabel}>
+              You Owe
+            </Text>
+
+            <Text style={styles.oweAmount}>
+              ₹{YouOwe.toFixed(2)}
+            </Text>
+          </View>
+
         </View>
-      </View> 
+      </View>
 
 
       {/* Expense Header */}
@@ -835,10 +851,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center"
   },
-  summaryItem:{
+  summaryItem: {
     flex: 1
   },
-  summaryDivider:{
+  summaryDivider: {
     width: 1,
     height: 55,
     backgroundColor: "#30363D",
@@ -857,14 +873,40 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  oweAmount:{
+  oweAmount: {
     color: "red",
-    fontSize: 30,
+    fontSize: 15,
     fontWeight: "bold",
     marginTop: 8,
   },
 
-  sectionHeader: {
+  balanceSection:{
+    flex: 1,
+    gap: 14
+  },
+  balanceRow:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+
+  balanceLabel:{
+    color: "#8B949E",
+    fontSize: 15,
+    fontWeight: "bold"
+  },
+  balanceLabel2:{
+    color: "#8B949E",
+    fontSize: 13,
+    fontWeight: "bold"
+  },
+  owedAmount:{
+  color: "#55efc4",
+  fontSize: 16,
+  fontWeight: "bold",
+  },
+
+  sectionHeader:{
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
@@ -1019,14 +1061,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  
-  expenseMenuOverlay: {
-  flex: 1,
-  backgroundColor: "transparent",
-},
 
-expenseMenuPositionStyle: {
-  position: "absolute",
-  right: 15,
-},
+  expenseMenuOverlay: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
+
+  expenseMenuPositionStyle: {
+    position: "absolute",
+    right: 15,
+  },
 });
