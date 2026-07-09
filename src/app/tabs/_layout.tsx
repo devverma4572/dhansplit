@@ -26,7 +26,7 @@ function TabLayout() {
         />
 
         <Tabs.Screen    
-            name="Groups"
+            name="groups"
             options={{
                 title: "Groups",
                 headerShown: false,

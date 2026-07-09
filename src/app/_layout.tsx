@@ -16,7 +16,7 @@ export default function AppLayout() {
         headerShown: false,
         presentation: "modal",
       }}/>
-      <Stack.Screen name="WelcomeScreen " options={{headerShown: false}}/>
+      <Stack.Screen name="WelcomeScreen" options={{headerShown: false}}/>
       <Stack.Screen name="Signup" options={{headerShown: false}}/>
       <Stack.Screen name="LoginScreen" options={{headerShown: false}}/>
       <Stack.Screen name="tabs" options={{headerShown: false}}/>
