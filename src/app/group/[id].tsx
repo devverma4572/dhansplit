@@ -4,9 +4,6 @@ import React, {
   useState
 } from "react";
 
-
-
-
 import {
   ActivityIndicator,
   Alert,
@@ -27,19 +24,23 @@ import {
   useLocalSearchParams,
 } from "expo-router";
 
+import { Expense } from "../../../types/group";
+
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   getDoc,
   getDocs,
   increment,
   query,
+  updateDoc,
   where,
   writeBatch
 } from "firebase/firestore";
 
 import { auth, firestore } from "../../../config/firebase";
-import { ExpenseSplit } from "../../../types/group";
 
 interface Group {
   id: string;
@@ -49,18 +50,18 @@ interface Group {
   totalExpense: number;
 }
 
-interface Expense {
-  id: string;
-  groupId: string;
-  title: string;
-  description: string;
-  amount: number;
-  paidBy: string;
-  paidByName: string;
-  splitType: "equal" | "unequal";
-  splits: ExpenseSplit[];
-  createdAt?: any;
-}
+// interface Expense {
+//   id: string;
+//   groupId: string;
+//   title: string;
+//   description: string;
+//   amount: number;
+//   paidBy: string;
+//   paidByName: string;
+//   splitType: "equal" | "unequal";
+//   splits: ExpenseSplit[];
+//   createdAt?: any;
+// }
 
 export default function GroupDetails() {
   const { id } = useLocalSearchParams<{
@@ -122,7 +123,7 @@ export default function GroupDetails() {
       });
 
       batch.delete(
-        doc(firestore, "groups", group.id)
+        doc(firestore, group.id)
       );
 
       await batch.commit();
@@ -208,11 +209,19 @@ export default function GroupDetails() {
         "EXPENSE DELETED SUCCESSFULLY"
       );
 
-      setExpenses((currentExpenses) =>
-        currentExpenses.filter(
-          (item) => item.id !== expense.id
-        )
-      );
+      setExpenses((currentExpenses) => {
+        const updatedExpenses =
+          currentExpenses.filter(
+            (item) =>
+              item.id !== expense.id
+          );
+
+        calculateGroupSummary(
+          updatedExpenses
+        );
+
+        return updatedExpenses;
+      });
 
       setGroup((currentGroup) => {
         if (!currentGroup) return null;
@@ -242,6 +251,64 @@ export default function GroupDetails() {
       console.log(
         "ERROR MESSAGE:",
         error?.message
+      );
+    }
+  };
+
+  const handleTogglePaid = async (
+    expense: Expense
+  ) => {
+    const currentUserId = auth.currentUser?.uid;
+
+    if (!currentUserId) {
+      return;
+    }
+
+    const alreadyPaid =
+      expense.settledUserIds?.includes(currentUserId) ?? false;
+
+    try {
+      // Update Firestore
+      await updateDoc(
+        doc(firestore, "expenses", expense.id),
+        {
+          settledUserIds: alreadyPaid
+            ? arrayRemove(currentUserId)
+            : arrayUnion(currentUserId),
+        }
+      );
+
+      // Update local expense list immediately
+      const updatedExpenses = expenses.map((item) => {
+        if (item.id !== expense.id) {
+          return item;
+        }
+
+        const currentSettledUsers =
+          item.settledUserIds || [];
+
+        return {
+          ...item,
+
+          settledUserIds: alreadyPaid
+            ? currentSettledUsers.filter(
+              (userId) => userId !== currentUserId
+            )
+            : [
+              ...currentSettledUsers,
+              currentUserId,
+            ],
+        };
+      });
+
+      setExpenses(updatedExpenses);
+
+      // Recalculate balances immediately
+      calculateGroupSummary(updatedExpenses);
+    } catch (error) {
+      console.log(
+        "TOGGLE PAID ERROR:",
+        error
       );
     }
   };
@@ -282,8 +349,7 @@ export default function GroupDetails() {
   const calculateGroupSummary = (
     groupExpenses: Expense[]
   ) => {
-    const currentUserId =
-      auth.currentUser?.uid;
+    const currentUserId = auth.currentUser?.uid;
 
     if (!currentUserId) {
       return;
@@ -294,52 +360,65 @@ export default function GroupDetails() {
     let owed = 0;
 
     groupExpenses.forEach((expense) => {
-      const expenseAmount =
-        Number(expense.amount);
+      const expenseAmount = Number(expense.amount);
 
-      // Add complete expense amount
+      // Total expense never changes when someone pays
       total += expenseAmount;
 
-      // Find current user's share
-      const mySplit =
-        expense.splits?.find(
-          (split) =>
-            split.userId === currentUserId
-        );
+      const mySplit = expense.splits?.find(
+        (split) =>
+          split.userId === currentUserId
+      );
 
-      // Current user was not included
       if (!mySplit) {
         return;
       }
 
-      const myShare =
-        Number(mySplit.amount);
+      const myShare = Number(mySplit.amount);
 
-      // I paid the expense
-      if (
-        expense.paidBy === currentUserId
-      ) {
-        owed +=
-          expenseAmount - myShare;
+      // -------------------------------
+      // CURRENT USER PAID THE EXPENSE
+      // -------------------------------
+
+      if (expense.paidBy === currentUserId) {
+        expense.splits.forEach((split) => {
+          // Do not count payer's own share
+          if (split.userId === currentUserId) {
+            return;
+          }
+
+          // Check whether this member already paid
+          const memberHasPaid =
+            expense.settledUserIds?.includes(
+              split.userId
+            ) ?? false;
+
+          if (!memberHasPaid) {
+            owed += Number(split.amount);
+          }
+        });
       }
 
-      // Another member paid
+      // -------------------------------
+      // SOMEONE ELSE PAID
+      // -------------------------------
+
       else {
-        owe += myShare;
-      }
-    });
+        const iHavePaid =
+          expense.settledUserIds?.includes(
+            currentUserId
+          ) ?? false;
 
-    console.log("GROUP SUMMARY:", {
-      total,
-      owe,
-      owed,
+        if (!iHavePaid) {
+          owe += myShare;
+        }
+      }
     });
 
     setTotalSpent(total);
     setYouOwe(owe);
     setYouAreOwed(owed);
   };
-
 
 
 
@@ -657,7 +736,15 @@ export default function GroupDetails() {
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.expenseCard}>
+            <View
+              style={[
+                styles.expenseCard,
+
+                item.settledUserIds?.includes(
+                  auth.currentUser?.uid || ""
+                ) && styles.paidExpenseCard,
+              ]}
+            >
               <View style={styles.expenseIcon}>
                 <Ionicons
                   name="receipt"
@@ -691,6 +778,68 @@ export default function GroupDetails() {
                     ? "Split equally"
                     : "Split unequally"}
                 </Text>
+
+                {(() => {
+                  const currentUserId = auth.currentUser?.uid;
+
+                  if (!currentUserId) {
+                    return null;
+                  }
+
+                  // Payer does not need to mark their own expense as paid
+                  if (item.paidBy === currentUserId) {
+                    return null;
+                  }
+
+                  // Current user must be part of this expense
+                  const mySplit = item.splits?.find(
+                    (split) =>
+                      split.userId === currentUserId
+                  );
+
+                  if (!mySplit) {
+                    return null;
+                  }
+
+                  const isPaid =
+                    item.settledUserIds?.includes(
+                      currentUserId
+                    ) ?? false;
+
+                  return (
+                    <TouchableOpacity
+                      style={styles.paidToggle}
+                      onPress={() =>
+                        handleTogglePaid(item)
+                      }
+                    >
+                      <Ionicons
+                        name={
+                          isPaid
+                            ? "checkbox"
+                            : "square-outline"
+                        }
+                        size={20}
+                        color={
+                          isPaid
+                            ? "#55efc4"
+                            : "#8B949E"
+                        }
+                      />
+
+                      <Text
+                        style={[
+                          styles.paidToggleText,
+
+                          isPaid &&
+                          styles.paidToggleTextActive,
+                        ]}
+                      >
+                        {isPaid ? "Paid" : "Unpaid"}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })()}
               </View>
 
               <View style={styles.expenseRight}>
@@ -723,9 +872,30 @@ export default function GroupDetails() {
 
 
 
-                <Text style={styles.amount}>
-                  ₹{item.amount}
-                </Text>
+                {(() => {
+                  const currentUserId = auth.currentUser?.uid;
+
+                  const mySplit = item.splits?.find(
+                    (split) =>
+                      split.userId === currentUserId
+                  );
+
+                  return (
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.totalAmountLabel}>
+                        Total ₹{Number(item.amount).toFixed(2)}
+                      </Text>
+
+                      <Text style={styles.splitAmount}>
+                        ₹{Number(mySplit?.amount || 0).toFixed(2)}
+                      </Text>
+
+                      <Text style={styles.yourShareLabel}>
+                        your share
+                      </Text>
+                    </View>
+                  );
+                })()}
               </View>
             </View>
           )}
@@ -880,33 +1050,33 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  balanceSection:{
+  balanceSection: {
     flex: 1,
     gap: 14
   },
-  balanceRow:{
+  balanceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center"
   },
 
-  balanceLabel:{
+  balanceLabel: {
     color: "#8B949E",
     fontSize: 15,
     fontWeight: "bold"
   },
-  balanceLabel2:{
+  balanceLabel2: {
     color: "#8B949E",
     fontSize: 13,
     fontWeight: "bold"
   },
-  owedAmount:{
-  color: "#55efc4",
-  fontSize: 16,
-  fontWeight: "bold",
+  owedAmount: {
+    color: "#55efc4",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 
-  sectionHeader:{
+  sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
@@ -1071,4 +1241,80 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 15,
   },
+
+  payButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#2537B8",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+
+  payButtonText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  paidBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 5,
+    marginTop: 8,
+  },
+
+  paidText: {
+    color: "#55efc4",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+
+  paidExpenseCard: {
+  backgroundColor: "#12382F",
+  borderWidth: 1,
+  borderColor: "#2D7A64",
+},
+
+paidToggle: {
+  flexDirection: "row",
+  alignItems: "center",
+  alignSelf: "flex-start",
+  marginTop: 7,
+  gap: 5,
+},
+
+paidToggleText: {
+  color: "#8B949E",
+  fontSize: 12,
+  fontWeight: "600",
+},
+
+paidToggleTextActive: {
+  color: "#55efc4",
+},
+
+amountContainer: {
+  alignItems: "flex-end",
+},
+
+totalAmountLabel: {
+  color: "#8B949E",
+  fontSize: 10,
+  marginBottom: 2,
+},
+
+splitAmount: {
+  color: "white",
+  fontSize: 18,
+  fontWeight: "bold",
+},
+
+yourShareLabel: {
+  color: "#8B949E",
+  fontSize: 9,
+  marginTop: 1,
+},
 });

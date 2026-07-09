@@ -32,4 +32,5 @@ export interface Expense {
   splitType: "equal" | "unequal";
   splits: ExpenseSplit[];
   createdAt?: any;
+  settledUserIds?: string[];
 }

@@ -167,6 +167,7 @@ const expenseSplits = memberIds.map(
           splitType: splitType,   
 
           splits: expenseSplits,
+          settledUserIds: [],
 
           createdAt:
             serverTimestamp(),

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   collection,
@@ -26,7 +26,7 @@ import {
   UserData,
 } from "../../../types/home";
 
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 
 
@@ -158,36 +158,43 @@ const calculateSummary = (
           split.userId === currentUserId
       );
 
-    // Current user was not included
     if (!mySplit) {
       return;
     }
 
-    const myShare =
-      Number(mySplit.amount);
-
-    // CASE 1:
-    // I paid for the expense
+    // I paid
     if (
       expense.paidBy === currentUserId
     ) {
-      // Other members owe me
-      owed +=
-        expenseAmount - myShare;
+      expense.splits.forEach((split) => {
+        if (
+          split.userId === currentUserId
+        ) {
+          return;
+        }
+
+        const memberHasPaid =
+          expense.settledUserIds?.includes(
+            split.userId
+          ) ?? false;
+
+        if (!memberHasPaid) {
+          owed += Number(split.amount);
+        }
+      });
     }
 
-    // CASE 2:
     // Someone else paid
     else {
-      // I owe my share to the payer
-      owe += myShare;
-    }
-  });
+      const iHavePaid =
+        expense.settledUserIds?.includes(
+          currentUserId
+        ) ?? false;
 
-  console.log("SUMMARY:", {
-    total,
-    owe,
-    owed,
+      if (!iHavePaid) {
+        owe += Number(mySplit.amount);
+      }
+    }
   });
 
   setTotalExpenses(total);
@@ -195,10 +202,11 @@ const calculateSummary = (
   setYouAreOwed(owed);
 };
 
-
-useEffect(() => {
-  loadHomeData();
-}, []);
+useFocusEffect(
+  useCallback(() =>{
+    loadHomeData();
+  }, [])
+)
 
 const loadHomeData = async () => {
   try {

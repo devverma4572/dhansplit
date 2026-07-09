@@ -20,6 +20,7 @@ export interface Expense {
   paidByName?: string;
   splitType: "equal" | "unequal";
   splits: ExpenseSplit[];
+  settledUserIds: string[];
   createdAt?: any;
 }
 
