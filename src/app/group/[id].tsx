@@ -111,6 +111,7 @@ export default function GroupDetails() {
   // ------------------------------ Function to delete Group --------------------------------------
 
   const deleteGroupFromFirebase = async () => {
+    console.log("Deleting group");
     if (!group) return;
 
     try {
@@ -123,14 +124,18 @@ export default function GroupDetails() {
       });
 
       batch.delete(
-        doc(firestore, group.id)
-      );
+  doc(
+    firestore,
+    "groups",
+    group.id
+  )
+);
 
       await batch.commit();
 
       console.log("GROUP DELETED SUCCESSFULLY");
 
-      router.replace("/tabs/groups");
+      router.dismissTo("/tabs/groups");
     } catch (error: any) {
       console.log("DELETE GROUP ERROR:", error);
       console.log("ERROR CODE:", error?.code);
