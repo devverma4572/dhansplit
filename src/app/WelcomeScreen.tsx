@@ -3,6 +3,7 @@ import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
+import ScreenWrapper from "./ScreenWrapper";
 
 export default function WelcomeScreen(){
     const themeColors = {
@@ -10,6 +11,7 @@ export default function WelcomeScreen(){
         primary: "#22c55e",
     };
     return(
+        <ScreenWrapper>
         <SafeAreaView className="flex-1" style={{backgroundColor: themeColors.bg}}>
             <View className="flex-1 flex justify-around my-4">
             <Text className="text-white font-bold text-4xl text-center  ">
@@ -51,5 +53,6 @@ export default function WelcomeScreen(){
 
             </View>
         </SafeAreaView>
+        </ScreenWrapper>
     )
 }

@@ -23,6 +23,7 @@ import {
 
 import { auth, firestore } from "../../../config/firebase";
 import { Group } from "../../../types/group";
+import ScreenWrapper from "../ScreenWrapper";
 
 export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -132,6 +133,7 @@ export default function Groups() {
   }
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
@@ -238,6 +240,7 @@ export default function Groups() {
         />
       )}
     </View>
+    </ScreenWrapper>
   );
 }
 

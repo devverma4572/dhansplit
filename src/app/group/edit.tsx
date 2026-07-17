@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -12,22 +12,25 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import {
-  addDoc,
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
-  where,
+  updateDoc,
+  where
 } from "firebase/firestore";
 
 import { auth, firestore } from "../../../config/firebase";
 import { AppUser } from "../../../types/group";
 import ScreenWrapper from "../ScreenWrapper";
 
-export default function CreateGroup() {
+
+export default function editfGroup() {
   const [groupName, setGroupName] = useState("");
 
   const [userName, setuserName] = useState("");
@@ -41,6 +44,93 @@ export default function CreateGroup() {
   const [searching, setSearching] = useState(false);
 
   const [creating, setCreating] = useState(false);
+
+  const { groupId } = useLocalSearchParams<{
+    groupId: string;
+}>();
+
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+    if(groupId){
+        loadGroup();
+    }
+}, [groupId]);
+
+const loadGroup = async () => {
+  try {
+    const groupRef = doc(
+      firestore,
+      "groups",
+      groupId
+    );
+
+    const snapshot =
+      await getDoc(groupRef);
+
+    if (!snapshot.exists()) {
+      Alert.alert(
+        "Error",
+        "Group not found."
+      );
+
+      router.back();
+
+      return;
+    }
+
+    const groupData =
+      snapshot.data();
+
+    setGroupName(groupData.name);
+
+    // Fetch member details
+    const members: AppUser[] = [];
+
+    for (const uid of groupData.members) {
+      const userSnapshot =
+        await getDoc(
+          doc(
+            firestore,
+            "users",
+            uid
+          )
+        );
+
+      if (userSnapshot.exists()) {
+        members.push({
+          uid,
+
+          name:
+            userSnapshot.data().name,
+
+          username:
+            userSnapshot.data().userName,
+
+          email:
+            userSnapshot.data().email,
+
+          profileImage:
+            userSnapshot.data()
+              .profileImage || "",
+        });
+      }
+    }
+
+    // Remove yourself
+    setSelectedMembers(
+      members.filter(
+        (member) =>
+          member.uid !==
+          auth.currentUser?.uid
+      )
+    );
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 const searchUser = async () => {
   const searcheduserName = userName.trim().toLowerCase();
@@ -150,7 +240,7 @@ const searchUser = async () => {
     );
   };
 
- const createGroup = async () => {
+ const updateGroupDetails = async () => {
   console.log("CREATE GROUP BUTTON PRESSED");
 
   const currentUser = auth.currentUser;
@@ -180,18 +270,23 @@ const searchUser = async () => {
 
     console.log("Member IDs:", memberIds);
 
-    const groupRef = await addDoc(
-      collection(firestore, "groups"),
-      {
-        name: groupName.trim(),
-        createdBy: currentUser.uid,
-        members: memberIds,
-        totalExpense: 0,
-        createdAt: serverTimestamp(),
-      }
-    );
+await updateDoc(
+  doc(
+    firestore,
+    "groups",
+    groupId
+  ),
+  {
+    name: groupName.trim(),
 
-    console.log("GROUP CREATED:", groupRef.id);
+    members: memberIds,
+
+    updatedAt:
+      serverTimestamp(),
+  }
+);
+
+    console.log("GROUP UPDATED", groupId);
 
     Alert.alert(
       "Success",
@@ -200,7 +295,8 @@ const searchUser = async () => {
 
     router.replace("/tabs/groups");
 
-  } catch (error: any) {
+  } 
+  catch (error: any) {
     console.log("CREATE GROUP ERROR:", error);
     console.log("ERROR CODE:", error?.code);
     console.log("ERROR MESSAGE:", error?.message);
@@ -213,6 +309,24 @@ const searchUser = async () => {
     setCreating(false);
   }
 };
+
+if (loading) {
+  return (
+    <View
+      style={{
+        flex:1,
+        justifyContent:"center",
+        alignItems:"center",
+        backgroundColor:"#0B1220"
+      }}
+    >
+      <ActivityIndicator
+        size="large"
+        color="#3D5AFE"
+      />
+    </View>
+  );
+}
 
   return (
     <ScreenWrapper>
@@ -230,7 +344,7 @@ const searchUser = async () => {
         </TouchableOpacity>
 
         <Text style={styles.title}>
-          Create Group
+          Update Group Details
         </Text>
       </View>
 
@@ -342,7 +456,7 @@ const searchUser = async () => {
 
       <TouchableOpacity
         style={styles.createButton}
-        onPress={createGroup}
+        onPress={updateGroupDetails }
 
         disabled={creating}
       >
@@ -350,7 +464,7 @@ const searchUser = async () => {
           <ActivityIndicator color="white" />
         ) : (
           <Text style={styles.createText}>
-            Create Group
+            Save Changes
           </Text>
         )}
       </TouchableOpacity>

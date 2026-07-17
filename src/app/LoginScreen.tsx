@@ -6,6 +6,7 @@ import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ArrowLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from "../../config/firebase";
+import ScreenWrapper from './ScreenWrapper';
 
 
 // import { LinearGradient } from 'react-native-svg';   
@@ -35,6 +36,7 @@ export default function LoginScreen() {
 
 
   return (
+    <ScreenWrapper>
     <View className="flex-1 bg-white" 
         style={{backgroundColor: themeColors.bg}}>
         <SafeAreaView className='flex'>
@@ -74,7 +76,9 @@ export default function LoginScreen() {
                     
                     placeholder='Enter Password'
                     value={password}
-                        onChangeText={value=> setPassword(value)}
+                        onChangeText={value=> setPassword(value)
+                        }
+                    secureTextEntry
                     />
             
                 <TouchableOpacity className='flex items-end mb-5'>
@@ -116,5 +120,6 @@ export default function LoginScreen() {
 
 
     </View>
+    </ScreenWrapper>
   )
 }

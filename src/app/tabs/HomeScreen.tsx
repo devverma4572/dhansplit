@@ -27,6 +27,7 @@ import {
 } from "../../../types/home";
 
 import { router, useFocusEffect } from "expo-router";
+import ScreenWrapper from "../ScreenWrapper";
 
 
 
@@ -258,6 +259,7 @@ if (loading) {
 
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -371,6 +373,7 @@ if (loading) {
       </TouchableOpacity>
 
     </View>
+    </ScreenWrapper>
   );
 }
 

@@ -41,6 +41,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, firestore } from "../../../config/firebase";
+import ScreenWrapper from "../ScreenWrapper";
 
 interface Group {
   id: string;
@@ -540,6 +541,7 @@ export default function GroupDetails() {
   };
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
 
       {/* Header */}
@@ -927,7 +929,6 @@ export default function GroupDetails() {
         />
       </TouchableOpacity>
 
-
       <Modal
         visible={groupMenuVisible}
         transparent
@@ -943,7 +944,31 @@ export default function GroupDetails() {
             setGroupMenuVisible(false)
           }
         >
+          <View style = {styles.modalContent}>
           <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setGroupMenuVisible(false);
+                router.push({
+                  pathname: "/group/edit",
+                  params: {
+                    groupId: group.id,
+                  },
+                });
+              }}
+            >
+              <Ionicons
+                name="create-outline"   
+                size={21}
+                color="white"
+              />
+
+              <Text style={styles.editGroupText}>
+                Edit Group
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.menuItem}
               onPress={() => {
@@ -962,12 +987,14 @@ export default function GroupDetails() {
               </Text>
             </TouchableOpacity>
           </View>
+          </View>
         </TouchableOpacity>
       </Modal>
 
 
 
     </View>
+    </ScreenWrapper>
   );
 
 }
@@ -975,6 +1002,10 @@ const styles = StyleSheet.create({
   headerInfo: {
     marginLeft: 18,
     flex: 1,
+  },
+  modalContent:{
+    flex: 1,
+    alignItems: "center",
   },
 
   menuButton: {
@@ -1189,12 +1220,19 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
 
-  menuContainer: {
+  // menuContainer: {
+  //   width: 180,
+  //   backgroundColor: "#1C2129",
+  //   borderRadius: 12,
+  //   paddingVertical: 5,
+  //   elevation: 10,
+  // },
+
+  menuContainer:{
+    position: "absolute",
     width: 180,
-    backgroundColor: "#1C2129",
-    borderRadius: 12,
-    paddingVertical: 5,
-    elevation: 10,
+    top: 60,
+    right: 25,
   },
 
   menuItem: {
@@ -1206,6 +1244,11 @@ const styles = StyleSheet.create({
 
   deleteMenuText: {
     color: "#ff5c5c",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  editGroupText: {
+    color: "white",
     fontSize: 15,
     fontWeight: "600",
   },

@@ -154,7 +154,8 @@ const uploadProfileImage = async(imageUri: string )=>{
 
   // ---------------------------------- FORM -----------------------------------------------------
 
-  return (
+return (
+
     <ModalWrapper>
       <View style={styles.container}>
             <Header 

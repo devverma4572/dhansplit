@@ -29,6 +29,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, firestore } from "../../../config/firebase";
+import ScreenWrapper from "../ScreenWrapper";
 
 // ------------------------------------ GROUP SNAPSHOT -------------------------------------------
 
@@ -221,6 +222,7 @@ const expenseSplits = memberIds.map(
     }
   };
     return (
+      <ScreenWrapper>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -397,6 +399,7 @@ const expenseSplits = memberIds.map(
       </TouchableOpacity>
 
     </ScrollView>
+    </ScreenWrapper>
   );
 }
 

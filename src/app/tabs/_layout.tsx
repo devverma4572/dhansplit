@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Platform } from 'react-native';
 
 function TabLayout() {
   return (
@@ -8,10 +9,24 @@ function TabLayout() {
         headerShown: false,
         tabBarStyle:{
             backgroundColor: "#020617",
-            width: "100%",
             height: 60,
             paddingBottom: 5,
             paddingTop: 5,
+
+            ...(Platform.OS === "web"
+                ?{
+                    position: "absolute",
+                    width: 430,
+                    alignSelf: "center",
+                    left: "50%",
+                    marginLeft: -215,
+                    borderTopWidth: 1,
+                    borderColor: "#374151",
+                }
+                :{
+                    width: "100%",
+                }
+            ),
         },
         }}>
         <Tabs.Screen
